@@ -1,0 +1,44 @@
+version: '3'
+services:
+  leafy-postgres:
+    image: lxxhxn/leafy-postgres:b45922c0c266517c9f61b24f52a368225b7ba3a9
+    volumes:
+      - mydata:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+    restart: always
+
+  leafy-backend:
+    build: ./leafy-backend
+    image: leafy-backend:5.0.0-compose
+    environment:
+      - DB_URL=leafy-postgres
+    depends_on:
+      - leafy-postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 512M
+    restart: on-failure
+      
+  leafy-front:
+    image: lxxhxn/leafy-frontend:aafcf898ca030a754b4205044c32c3eed1b119ee
+    environment:
+      - BACKEND_HOST=leafy-backend
+    ports:
+      - 80:80
+    depends_on:
+      - leafy-backend
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 64M
+    restart: on-failure
+
+volumes:
+  mydata:
